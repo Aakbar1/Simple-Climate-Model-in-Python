@@ -4,6 +4,7 @@ import numpy as np
 import EBMStatistics as EBM
 
 """ 
+    e 
 
     # Power_emitted = 4π * R^2 * σ * T^4
     # Solar irradiance = (power_emitted)/(Area)

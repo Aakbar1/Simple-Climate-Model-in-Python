@@ -1,0 +1,54 @@
+import math
+from ClimateModel import Planet
+from ClimateModel import Star
+
+
+class ModelMethods: 
+    def __init__(self, Planet: Planet):
+        self.Planet = Planet
+
+    def abs_solar_radiation(solar_irradiance, albedo):
+        absorbed_solar_radiation = solar_irradiance * (1 - albedo)
+        return absorbed_solar_radiation/4 # [W/m^2]
+    
+    def outgoing_thermal_radiation(T, A, B):
+        return A - B*T
+    
+    def greenhouse_effect(Current_CO2, CO2_Coefficent, Pre_industrial_CO2):
+        """"
+        a = 5.0 as it is the CO2 forcing coefficient [wm^-2]
+        Pre_industrial_CO2  = 280 [Parts per million]
+        """
+        return CO2_Coefficent * math.log(Current_CO2/Pre_industrial_CO2)
+
+    def CO2_functional_increase(pre_industrial_CO2, year, preindustrial_year):
+        return (pre_industrial_CO2 * (1 + (((year - preindustrial_year)/220)**3)))
+
+    def change_in_temp(Planet, change_in_time):
+        return ((change_in_time/Planet.C) * (
+      
+        ModelMethods.abs_solar_radiation(Planet.solar_irradiance, 
+                          Planet.albedo) 
+
+
+        - ModelMethods.outgoing_thermal_radiation(Planet.Temperatures[len(Planet.Temperatures) - 1], 
+                                 Planet.A, 
+                                 Planet.B)  
+
+
+        + ModelMethods.greenhouse_effect(
+            ModelMethods.CO2_functional_increase(Planet.preindustrial_CO2, Planet.Intervals[len(Planet.Intervals) - 1], Planet.preindustrial_year),
+            Planet.CO2_forcing_coefficient, 
+            Planet.preindustrial_CO2)
+    ))
+
+    def timestep(Planet):
+        Planet.Temperatures.append((Planet.Temperatures[len(Planet.Temperatures)-1]) + ModelMethods.change_in_temp(Planet, 1))
+        Planet.Intervals.append((Planet.Intervals[len(Planet.Intervals) - 1]) + 1)
+        Planet.CO2_concentrations.append(ModelMethods.CO2_functional_increase(Planet.preindustrial_CO2, Planet.Intervals[len(Planet.Intervals) - 1], Planet.preindustrial_year))
+
+    def run_model(Year, Planet):
+        for i in range(Year - (Planet.preindustrial_year)):
+            ModelMethods.timestep(Planet)
+        print(Planet.Intervals)
+        print(Planet.Temperatures)
